@@ -48,7 +48,6 @@ func flushToPostgres(ctx context.Context, redisClient *redis.Client, db *sql.DB)
                         log.Printf("Error flushing to PostgreSQL: %v", err)
                     }
 
-                    // Check storage quota
                     var totalSize int64
                     err = db.QueryRowContext(ctx, `SELECT SUM(LENGTH(value)) FROM kv WHERE tenant = $1`, tenant).Scan(&totalSize)
                     if err != nil {

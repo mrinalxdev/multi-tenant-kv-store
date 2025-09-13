@@ -15,22 +15,18 @@ import (
 )
 
 func main() {
-    // Initialize Redis and PostgreSQL
     redisClient := initRedis(os.Getenv("REDIS_ADDR"))
     db := initPostgres(os.Getenv("POSTGRES_DSN"))
     defer redisClient.Close()
     defer db.Close()
 
-    // Start background task for async flush to PostgreSQL
     ctx, cancel := context.WithCancel(context.Background())
     go flushToPostgres(ctx, redisClient, db)
 
-    // Set up HTTP router
     r := chi.NewRouter()
     r.Use(middleware.Logger)
     r.Use(middleware.Recoverer)
 
-    // Serve static files
     r.Get("/", serveIndex)
     r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
@@ -41,7 +37,6 @@ func main() {
         r.Delete("/", handleDelete(redisClient, db))
     })
 
-    // Start server
     srv := &http.Server{Addr: ":8080", Handler: r}
     go func() {
         if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -49,7 +44,6 @@ func main() {
         }
     }()
 
-    // Handle graceful shutdown
     stop := make(chan os.Signal, 1)
     signal.Notify(stop, os.Interrupt)
     <-stop
