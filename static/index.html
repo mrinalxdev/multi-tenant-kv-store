@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key-Value Store</title>
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4">Multi-Tenant Key-Value Store</h1>
+        <form id="kv-form" class="space-y-4">
+            <div>
+                <label for="tenant" class="block text-sm font-medium">Tenant</label>
+                <input id="tenant" type="text" class="w-full border rounded p-2" placeholder="e.g., tenant1">
+            </div>
+            <div>
+                <label for="key" class="block text-sm font-medium">Key</label>
+                <input id="key" type="text" class="w-full border rounded p-2" placeholder="e.g., key1">
+            </div>
+            <div>
+                <label for="value" class="block text-sm font-medium">Value (JSON)</label>
+                <textarea id="value" class="w-full border rounded p-2" placeholder='e.g., {"data": "value"}'></textarea>
+            </div>
+            <div class="flex space-x-2">
+                <button type="button" onclick="putKey()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">PUT</button>
+                <button type="button" onclick="getKey()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">GET</button>
+                <button type="button" onclick="deleteKey()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">DELETE</button>
+            </div>
+        </form>
+        <div id="response" class="mt-4 p-4 bg-gray-50 rounded"></div>
+    </div>
+    <script>
+        async function putKey() {
+            const tenant = document.getElementById('tenant').value;
+            const key = document.getElementById('key').value;
+            const value = document.getElementById('value').value;
+            const responseDiv = document.getElementById('response');
+            try {
+                const res = await fetch(`/v1/${tenant}/${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: value
+                });
+                responseDiv.textContent = `${res.status}: ${await res.text()}`;
+            } catch (err) {
+                responseDiv.textContent = `Error: ${err.message}`;
+            }
+        }
+
+        async function getKey() {
+            const tenant = document.getElementById('tenant').value;
+            const key = document.getElementById('key').value;
+            const responseDiv = document.getElementById('response');
+            try {
+                const res = await fetch(`/v1/${tenant}/${key}`);
+                responseDiv.textContent = `${res.status}: ${await res.text()}`;
+            } catch (err) {
+                responseDiv.textContent = `Error: ${err.message}`;
+            }
+        }
+
+        async function deleteKey() {
+            const tenant = document.getElementById('tenant').value;
+            const key = document.getElementById('key').value;
+            const responseDiv = document.getElementById('response');
+            try {
+                const res = await fetch(`/v1/${tenant}/${key}`, { method: 'DELETE' });
+                responseDiv.textContent = `${res.status}: ${await res.text()}`;
+            } catch (err) {
+                responseDiv.textContent = `Error: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
